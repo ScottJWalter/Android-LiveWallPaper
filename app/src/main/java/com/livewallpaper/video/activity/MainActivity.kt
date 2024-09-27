@@ -7,11 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.livewallpaper.video.R
@@ -21,7 +19,6 @@ import com.livewallpaper.video.utils.DocumentUtils.getPath
 
 class MainActivity : Activity() {
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
@@ -65,6 +62,13 @@ class MainActivity : Activity() {
                 Intent(this@MainActivity, SettingsActivity::class.java).also {
                     startActivity(it)
                 }
+            }
+        }
+
+
+        findViewById<Button?>(R.id.exit).apply {
+            setOnClickListener {
+                finish()
             }
         }
     }

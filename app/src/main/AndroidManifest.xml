@@ -12,7 +12,7 @@
         android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true"
         tools:ignore="MissingApplicationIcon"
-        tools:targetApi="m">
+        android:theme="@style/Theme.Transparent">
         <activity
             android:name="com.livewallpaper.video.activity.MainActivity"
             android:exported="true">
