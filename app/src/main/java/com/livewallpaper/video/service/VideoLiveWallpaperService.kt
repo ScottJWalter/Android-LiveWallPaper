@@ -1,16 +1,24 @@
 package com.livewallpaper.video.service
 
 import android.app.WallpaperManager
-import android.content.*
-import android.media.MediaPlayer
+import android.content.BroadcastReceiver
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.service.wallpaper.WallpaperService
 import android.view.SurfaceHolder
+import androidx.annotation.OptIn
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
 import java.io.File
 import java.io.IOException
 
 class VideoLiveWallpaperService : WallpaperService() {
     internal inner class VideoEngine : Engine() {
-        private var mediaPlayer: MediaPlayer? = null
+        private var mediaPlayer: ExoPlayer? = null
         private var broadcastReceiver: BroadcastReceiver? = null
         private var videoFilePath: String? = null
 
@@ -24,30 +32,38 @@ class VideoLiveWallpaperService : WallpaperService() {
                 override fun onReceive(context: Context, intent: Intent) {
                     val action = intent.getBooleanExtra(KEY_ACTION, false)
                     if (action) {
-                        mediaPlayer!!.setVolume(0f, 0f)
+                        mediaPlayer!!.volume = 0f
                     } else {
-                        mediaPlayer!!.setVolume(1.0f, 1.0f)
+                        mediaPlayer!!.volume = 1.0f
                     }
                 }
             }.also { broadcastReceiver = it }, intentFilter, null, null, Context.RECEIVER_NOT_EXPORTED)
         }
 
+        @OptIn(UnstableApi::class)
         override fun onSurfaceCreated(holder: SurfaceHolder) {
             super.onSurfaceCreated(holder)
-            mediaPlayer = MediaPlayer().apply {
-                setSurface(holder.surface)
-                setDataSource(videoFilePath)
-                isLooping = true
-                setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT)
+            mediaPlayer = ExoPlayer.Builder(applicationContext).build().apply {
+                setVideoSurface(holder.surface)
+                videoFilePath?.let {
+                    val mediaItem = MediaItem.fromUri(it)
+                    setMediaItem(mediaItem)
+                }
+                repeatMode = ExoPlayer.REPEAT_MODE_ALL
                 prepare()
-                start()
+                playWhenReady = true
+
+                // Set video scaling mode
+                videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
             }
+
             try {
                 val file = File("$filesDir/unmute")
-                if (file.exists()) mediaPlayer!!.setVolume(1.0f, 1.0f) else mediaPlayer!!.setVolume(
-                    0f,
-                    0f
-                )
+                if (file.exists()) {
+                    mediaPlayer!!.volume = 1.0f
+                } else {
+                    mediaPlayer!!.volume = 0f
+                }
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -55,7 +71,7 @@ class VideoLiveWallpaperService : WallpaperService() {
 
         override fun onVisibilityChanged(visible: Boolean) {
             if (visible) {
-                mediaPlayer!!.start()
+                mediaPlayer!!.play()
             } else {
                 mediaPlayer!!.pause()
             }
