@@ -64,3 +64,6 @@ fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
 /.idea
+/app/release/baselineProfiles/0/app-release.dm
+/app/release/baselineProfiles/1/app-release.dm
+/app/release/output-metadata.json
